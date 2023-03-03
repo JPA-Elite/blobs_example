@@ -33,6 +33,8 @@ class BlobController extends Controller
 
     public function store(Request $request)
     {
+       
+      
         try {
             // Retrieve the uploaded image
             $image = $request->file('image');
