@@ -64,3 +64,16 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+##Packages use 
+To use the Tinify API in your PHP application, you need to install the tinify/tinify package using Composer.
+
+To install the package, run the following command in your project directory:
+<b>composer require tinify/tinify<b>
+
+This will download and install the latest version of the Tinify package and its dependencies.
+
+Once you have installed the package, you can use the Tinify\Tinify class to interact with the API. You will also need to provide your API key to authenticate with the Tinify service. You can obtain an API key by signing up for a Tinify account at https://tinypng.com/developers.
+
