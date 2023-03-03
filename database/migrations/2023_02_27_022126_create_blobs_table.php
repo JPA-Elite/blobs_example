@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('blobs', function (Blueprint $table) {
             $table->id();
-            $table->binary('image');
+            $table->longText('image');
             $table->timestamps();
         });
     }

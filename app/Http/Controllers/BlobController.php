@@ -29,12 +29,8 @@ class BlobController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
-
     public function store(Request $request)
     {
-       
-      
         try {
             // Retrieve the uploaded image
             $image = $request->file('image');
@@ -45,12 +41,23 @@ class BlobController extends Controller
                     'img_err' => 'No image found!',
                 ]);
             } else if ($image->getSize() > 20000) {
-                // Compress the image using Intervention library
-                $compressed_image = Image::make($image)->widen(500)->encode('jpg', 80);
+                // Compress the image using TinyPNG API
+                $api_key = env('TINYPNG_API_KEY');
+                $client = new \GuzzleHttp\Client();
+                $response = $client->post('https://api.tinify.com/shrink', [
+                    'headers' => [
+                        'Authorization' => 'Basic ' . base64_encode('api:' . $api_key),
+                    ],
+                    'body' => file_get_contents($image->getPathname()),
+                ]);
 
-                // Save the compressed image to the database
+                $compressed_data = json_decode((string) $response->getBody());
+                $compressed_url = $compressed_data->output->url;
+
+                // Download the compressed image and save it to the database
+                $compressed_image_data = file_get_contents($compressed_url);
                 blob::create([
-                    'image' => $compressed_image->__toString(),
+                    'image' => $compressed_image_data,
                 ]);
             } else {
                 // Save the original image
@@ -68,7 +75,6 @@ class BlobController extends Controller
             ]);
         }
     }
-
 
 
 
