@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\blob;
+use Exception;
 use Illuminate\Http\Request;
-use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\Redirect;
+use Intervention\Image\Facades\Image;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class BlobController extends Controller
 {
@@ -13,7 +16,6 @@ class BlobController extends Controller
      */
     public function index()
     {
-      
     }
 
     /**
@@ -27,34 +29,47 @@ class BlobController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+
     public function store(Request $request)
     {
+        try {
+            // Retrieve the uploaded image
+            $image = $request->file('image');
 
+            // Check if the image size is less than or equal to 20kb
+            if (!$image) {
+                return Redirect::back()->withErrors([
+                    'img_err' => 'No image found!',
+                ]);
+            } else if ($image->getSize() > 20000) {
+                // Compress the image using Intervention library
+                $compressed_image = Image::make($image)->widen(500)->encode('jpg', 80);
 
+                // Save the compressed image to the database
+                blob::create([
+                    'image' => $compressed_image->__toString(),
+                ]);
+            } else {
+                // Save the original image
+                $image_data = file_get_contents($image->getPathname());
+                blob::create([
+                    'image' => $image_data,
+                ]);
+            }
 
-
-        // Retrieve the uploaded image
-        $image = $request->file('image');
-
-        // Resize the image to the desired dimensions
-        $max_width = 800;
-        $image = Image::make($image);
-        if ($image->width() > $max_width) {
-            $image->resize($max_width, null, function ($constraint) {
-                $constraint->aspectRatio();
-            });
+            // Redirect to a success page
+            return response('yes');
+        } catch (Exception $err) {
+            return Redirect::back()->withErrors([
+                'img_err' => 'There is an error!',
+            ]);
         }
-
-        // Compress the image and save it in JPEG format
-        $image_data = $image->encode('jpg', 50)->__toString();
-
-        // Store the compressed image as a BLOB in the database
-        blob::create([
-            'image' => $image_data
-        ]);
-        // Redirect to a success page
-        return response('yes');
     }
+
+
+
+
 
     /**
      * Display the specified resource.
